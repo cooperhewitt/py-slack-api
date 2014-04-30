@@ -2,6 +2,22 @@
 
 There are many wrappers for the Slack API. This one is ours.
 
+## Example
+
+	from slack.api.client import OAuth2
+
+	api = OAuth2(ACCESS_TOKEN)
+
+	method = 'chat.postMessage'
+
+	args = {
+		'channel': CHANNEL,
+		'text': MESSAGE
+	}
+
+	rsp = api.execute_method(method, args)
+	print rsp
+
 ## TO DO
 
 * A proper `setup.py` file
