@@ -1,51 +1,17 @@
-import urllib
-import httplib
-import base64
-import json
-import logging
+import flamework.api.client
+import flamework.api.request
 
-from request import encode_multipart_formdata, encode_urlencode
-
-class OAuth2:
+class OAuth2(flamework.api.client.OAuth2):
 
     def __init__(self, access_token, **kwargs):
 
+        
         self.access_token = access_token
 
         self.hostname = kwargs.get('hostname', 'slack.com')
         self.endpoint = kwargs.get('endpoint', '/api')
 
         logging.debug("setup API to use %s%s" % (self.hostname, self.endpoint))
-
-    def execute_method(self, method, kwargs, encode=encode_urlencode):
-
-        logging.debug("calling %s with args %s" % (method, kwargs))
-
-        kwargs['method'] = method
-        kwargs['token'] = self.access_token
-
-        (headers, body) = encode(kwargs)
-
-        url = self.endpoint + '/' + method
-        logging.debug("calling %s" % url)
-
-        conn = httplib.HTTPSConnection(self.hostname)
-        conn.request('POST', url, body, headers)
-
-        rsp = conn.getresponse()
-        body = rsp.read()
-
-        logging.debug("response is %s" % body)
-
-        try:
-            data = json.loads(body)
-        except Exception, e:
-            logging.error(e)
-            raise Exception, e
-
-        # check status here...
-
-        return data
 
 if __name__ == '__main__':
 
