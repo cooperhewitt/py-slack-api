@@ -21,7 +21,6 @@ There are many wrappers for the Slack API. This one is ours.
 ## TO DO
 
 * Use [py-flamework-api](https://github.com/cooperhewitt/py-flamework-api) as a base class
-* A proper `setup.py` file
 
 ## See also
 
