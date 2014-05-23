@@ -13,6 +13,7 @@ if __name__ == '__main__':
 
     parser.add_option('--config', dest='config', action='store', help='The path to a config file containing things like your Slack access token')
     parser.add_option('--channel', dest='channel', action='store', help='The Slack channel you want to post to')
+    parser.add_option('--username', dest='username', action='store', help='The username you want to post to as')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='be chatty (default is false)')
         
     options, args = parser.parse_args()
@@ -33,6 +34,9 @@ if __name__ == '__main__':
         'channel': options.channel,
         'text': message
     }
+
+    if (options.username):
+        args['username'] = options.username
 
     try:
         rsp = api.execute_method('chat.postMessage', args)
