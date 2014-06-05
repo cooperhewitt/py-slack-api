@@ -1,6 +1,6 @@
-# py-slack
+# py-slack-api
 
-There are many wrappers for the Slack API. This one is ours.
+There are many wrappers for the Slack API. This one is the Cooper-Hewitt's.
 
 ## Example
 
