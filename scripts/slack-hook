@@ -12,8 +12,9 @@ if __name__ == '__main__':
     parser = optparse.OptionParser()
 
     parser.add_option('--config', dest='config', action='store', help='The path to a config file containing things like your Slack access token')
-    # parser.add_option('--channel', dest='channel', action='store', help='The Slack channel you want to post to')
-    # parser.add_option('--username', dest='username', action='store', help='The username you want to post to as')
+    parser.add_option('--channel', dest='channel', action='store', help='The Slack channel you want to post to', default=None)
+    parser.add_option('--username', dest='username', action='store', help='The username you want to post to as', default=None)
+    parser.add_option('--icon', dest='icon', action='store', help='The custom emoji icon you want to post with', default=None)
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False, help='be chatty (default is false)')
 
     options, args = parser.parse_args()
@@ -26,7 +27,19 @@ if __name__ == '__main__':
     cfg = ConfigParser.ConfigParser()
     cfg.read(options.config)
 
+    hook = cfg.get('slack', 'webhook')
     msg = " ".join(args)
 
-    wh = Webhook(cfg.get('slack', 'webhook'))
-    wh.send(msg)
+    kwargs = {}
+
+    if options.channel:
+        kwargs['channel'] = options.channel
+
+    if options.username:
+        kwargs['username'] = options.username
+
+    if options.icon:
+        kwargs['icon_emoji'] = options.icon
+
+    wh = Webhook(hook)
+    wh.send(msg, **kwargs)
