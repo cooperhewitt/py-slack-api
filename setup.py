@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+from setuptools import setup, find_packages
 
-setup(name='slack-api',
-      version='0.2.1',
-      description='Simple Python wrapper for Slack API',
-      author='Smithsonian Cooper-Hewitt National Design Museum',
-      url='https://github.com/cooperhewitt/py-slack-api',
-      requires=[],
-      packages=[
-          'slack',
-          'slack.api'
-      ],
-      scripts=[
-          'scripts/slack-chat',
-          'scripts/slack-hook'
-      ],
-      download_url='https://github.com/cooperhewitt/py-slack-api/releases/tag/v0.2.1',
-      license='BSD')
+packages = find_packages()
+desc = open("README.md").read(),
+
+setup(
+    name='slack.api',
+    namespace_packages=['slack'],
+    version='0.4',
+    description='Simple Python wrapper for the Slack API',
+    author='Smithsonian Cooper-Hewitt National Design Museum',
+    url='https://github.com/cooperhewitt/py-slack-api',
+    install_requires=[
+        'requests'
+        ],
+    packages=packages,
+    scripts=[
+        'scripts/slack-chat',
+        'scripts/slack-hook'        
+        ],
+    download_url='https://github.com/cooperhewitt/py-slack-api/releases/tag/v0.3',
+    license='BSD')

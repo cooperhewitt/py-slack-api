@@ -1,35 +1,38 @@
-import urllib
-import httplib
 import base64
 import json
 import logging
-from urlparse import urlparse
+import requests
 
 from request import encode_multipart_formdata, encode_urlencode
 
 class Webhook:
 
-    def __init__(self, url):
+    def __init__(self, url, **kwargs):
+
         self.url = url
+        self.proxy = kwargs.get('proxy', None)
+
+        if self.proxy:
+            logging.debug("setup webhook to use proxy %s" % self.proxy)
 
     def send(self, message, **kwargs):
-        
+
         kwargs['text'] = message
         payload = json.dumps(kwargs)
 
         params = { 'payload': payload }
-        (headers, body) = encode_urlencode(params)
+        args = encode_urlencode(params)
 
-        info = urlparse(self.url)
+        if self.proxy:
+            args["proxies"] = {"https": self.proxy }
 
-        conn = httplib.HTTPSConnection(info.netloc)
-        conn.request('POST', info.path, body, headers)
+        print args
 
-        rsp = conn.getresponse()
-        body = rsp.read()
+        rsp = requests.post(self.url, **args)
+        body = rsp.text
 
         return body
-
+        
 class OAuth2:
 
     def __init__(self, access_token, **kwargs):
@@ -38,38 +41,52 @@ class OAuth2:
 
         self.hostname = kwargs.get('hostname', 'slack.com')
         self.endpoint = kwargs.get('endpoint', '/api')
-
+        self.proxy = kwargs.get('proxy', None)
+        
         logging.debug("setup API to use %s%s" % (self.hostname, self.endpoint))
 
-    def execute_method(self, method, kwargs, encode=encode_urlencode):
+        if self.proxy:
+            logging.debug("setup API to use proxy %s" % self.proxy)
 
-        logging.debug("calling %s with args %s" % (method, kwargs))
+    def execute_method(self, method, data, encode=encode_urlencode):
 
-        kwargs['method'] = method
-        kwargs['token'] = self.access_token
+        logging.debug("calling %s with args %s" % (method, data))
 
-        (headers, body) = encode(kwargs)
-
-        url = self.endpoint + '/' + method
+        data['token'] = self.access_token
+        
+        url = "https://" + self.hostname + self.endpoint + '/' + method
         logging.debug("calling %s" % url)
 
-        conn = httplib.HTTPSConnection(self.hostname)
-        conn.request('POST', url, body, headers)
+        args = encode(data)
 
-        rsp = conn.getresponse()
-        body = rsp.read()
+        # http://docs.python-requests.org/en/latest/user/advanced/#proxies
+        # http://lukasa.co.uk/2013/07/Python_Requests_And_Proxies/
+
+        if self.proxy:
+            args["proxies"] = {"https": self.proxy }
+
+        rsp = requests.post(url, **args)
+        body = rsp.text
 
         logging.debug("response is %s" % body)
 
         try:
             data = json.loads(body)
         except Exception, e:
+
             logging.error(e)
-            raise Exception, e
+            logging.debug(body)
+            
+            error = { 'code': 000, 'message': 'failed to parse JSON', 'details': body }
+            data = { 'stat': 'error', 'error': error }
 
         # check status here...
 
         return data
+
+    def call (self, method, **kwargs):
+        logging.warning("The 'call' method is deprecated. Please use 'execute_method' instead.")
+        self.execute_method(method, kwargs)
 
 if __name__ == '__main__':
 
@@ -79,8 +96,6 @@ if __name__ == '__main__':
     import optparse
 
     parser = optparse.OptionParser(usage="python api.py --access-token <ACCESS TOKEN>")
-
-    # sudo make me read a config file...
 
     parser.add_option('--access-token', dest='access_token',
                         help='Your Slack API access token',
@@ -105,8 +120,6 @@ if __name__ == '__main__':
     else:
         logging.basicConfig(level=logging.INFO)
     
-    sys.exit()
-
     api = OAuth2(options.access_token)
 
     try:
