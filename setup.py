@@ -13,7 +13,7 @@ setup(name='slack-api',
           'slack.api'
       ],
       scripts=[
-          'scripts/slack-chat'
+          'scripts/slack-chat',
           'scripts/slack-hook'
       ],
       download_url='https://github.com/cooperhewitt/py-slack-api/releases/tag/v0.2',
