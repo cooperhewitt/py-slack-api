@@ -3,8 +3,32 @@ import httplib
 import base64
 import json
 import logging
+from urlparse import urlparse
 
 from request import encode_multipart_formdata, encode_urlencode
+
+class Webhook:
+
+    def __init__(self, url):
+        self.url = url
+
+    def send(self, message, **kwargs):
+        
+        kwargs['text'] = message
+        payload = json.dumps(kwargs)
+
+        params = { 'payload': payload }
+        (headers, body) = encode_urlencode(params)
+
+        info = urlparse(self.url)
+
+        conn = httplib.HTTPSConnection(info.netloc)
+        conn.request('POST', info.path, body, headers)
+
+        rsp = conn.getresponse()
+        body = rsp.read()
+
+        return body
 
 class OAuth2:
 
@@ -80,6 +104,8 @@ if __name__ == '__main__':
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+    
+    sys.exit()
 
     api = OAuth2(options.access_token)
 
